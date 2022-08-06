@@ -29,4 +29,4 @@ export async function downloadFiction() {
 
 }
 
-console.info(downloadFiction().then(() => console.info('done')));
+downloadFiction().then(() => console.info('done'));
