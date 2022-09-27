@@ -8,7 +8,9 @@ async function downloadEpub(apiResp) {
     const apiJson = await apiResp.json();
 
     const epubFile = await fetch(`https://www.fichub.net${apiJson.epub_url}`);
-    const {author, title} = apiJson.meta;
+    let {author, title} = apiJson.meta;
+    title = title.replace(/[^\w\s-]/g, '');
+
     const fileStream = fs.createWriteStream(`${process.env.SAVE_PATH}/${author} - ${title}.epub`);
     await new Promise((resolve, reject) => {
         epubFile.body.pipe(fileStream);
