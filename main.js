@@ -8,7 +8,7 @@ async function downloadEpub(apiResp) {
     const apiJson = await apiResp.json();
 
     const epubFile = await fetch(`https://www.fichub.net${apiJson.epub_url}`);
-    let {author, title} = apiJson.meta;
+    let {author, title, chapters, status} = apiJson.meta;
     title = title.replace(/[^\w\s-]/g, '');
 
     const fileStream = fs.createWriteStream(`${process.env.SAVE_PATH}/${author} - ${title}.epub`);
@@ -17,7 +17,7 @@ async function downloadEpub(apiResp) {
         epubFile.body.on('error', reject);
         fileStream.on('finish', resolve);
     })
-        .then(() => console.info(`Download completed for ${author} - ${title}`))
+        .then(() => console.info(`Download completed for ${author} - ${title} (${status}: ${chapters} chapters)`))
         .catch(() => console.error(`Download failed for ${author} - ${title}`));
 }
 
