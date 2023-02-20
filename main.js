@@ -19,6 +19,7 @@ async function downloadEpub(apiResp) {
     })
         .then(() => console.info(`Download completed for ${author} - ${title} (${status}: ${chapters} chapters)`))
         .catch(() => console.error(`Download failed for ${author} - ${title}`));
+    return status;
 }
 
 export async function downloadFiction() {
@@ -27,8 +28,11 @@ export async function downloadFiction() {
     const baseUrl = 'https://fichub.net/api/v0/epub?q=';
 
     let errorUrls = [];
+    let incompleteUrls = [];
+
     for (let url of ficUrls) {
         if (url && url.indexOf('https://') > -1) {
+            let status = '';
             console.info(`Sending request for ${url}`);
             try {
                 const apiResp = await fetch(baseUrl + url, {signal: AbortSignal.timeout(5000)})
@@ -38,11 +42,14 @@ export async function downloadFiction() {
                     });
 
                 if (apiResp && apiResp.status === 200) {
-                    await downloadEpub(apiResp);
+                    status = await downloadEpub(apiResp);
                 }
             } catch (e) {
                 errorUrls.push(url);
                 console.error(`Fetch failed for ${url}`);
+            }
+            if (status && status !== 'complete') {
+                incompleteUrls.push(url);
             }
         }
     }
@@ -75,7 +82,8 @@ export async function downloadFiction() {
         errorUrls = failures;
         retries++;
     }
-
+    const urls = 'Put urls here\n' + errorUrls.join('\n') + '\n' + incompleteUrls.join('\n');
+    fs.writeFileSync('fics.txt', urls);
 
 }
 
